@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Firmware Manager</title>
+  <style>
+    body { font-family: system-ui, Arial, sans-serif; margin: 0; background: #0b0c0f; color: #e5e7eb; }
+    header { padding: 16px 24px; border-bottom: 1px solid #1f2937; display: flex; justify-content: space-between; align-items: center; }
+    h1 { font-size: 18px; margin: 0; }
+    .btn { padding: 8px 12px; border: 1px solid #374151; background: #111827; color: #e5e7eb; border-radius: 10px; cursor: pointer; }
+    .btn:hover { background: #0b1220; }
+    .container { padding: 20px 24px; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { padding: 10px 8px; border-bottom: 1px solid #1f2937; }
+    th { text-align: left; color: #9ca3af; font-weight: 600; }
+    .row { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; }
+    .progress { background: #111827; border: 1px solid #374151; border-radius: 8px; height: 8px; width: 160px; overflow: hidden; }
+    .bar { height: 100%; background: #3b82f6; width: 0%; transition: width 0.3s ease; }
+    .pill { font-size: 12px; padding: 2px 8px; border-radius: 999px; border: 1px solid #374151; background: #0f172a; color: #cbd5e1; }
+    footer { padding: 12px 24px; border-top: 1px solid #1f2937; color: #6b7280; font-size: 12px; }
+    .hidden { display: none; }
+    select { background: #0f172a; border: 1px solid #374151; color: #e5e7eb; padding: 6px; border-radius: 8px; }
+    a { color: #93c5fd; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Firmware Manager</h1>
+    <div class="row">
+      <button class="btn" id="uploadBtn">Upload Firmware</button>
+      <button class="btn" id="downloadBtn">Download Existing Firmware</button>
+      <input type="file" id="fileInput" class="hidden" />
+    </div>
+  </header>
+
+  <div class="container">
+    <h2 style="font-size:16px;margin:0 0 12px 0;color:#9ca3af;">Active Downloads</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>FirmwareID</th>
+          <th>Status</th>
+          <th>Progress</th>
+          <th>%</th>
+          <th>IP</th>
+          <th>Bytes</th>
+          <th>Started</th>
+          <th>ConnID</th>
+        </tr>
+      </thead>
+      <tbody id="downloadsBody">
+        <!-- rows injected here -->
+      </tbody>
+    </table>
+
+    <div style="margin-top:16px;">
+      <h3 style="font-size:14px;margin:0 0 8px 0;color:#9ca3af;">Stored Firmwares</h3>
+      <div id="firmwareList"></div>
+    </div>
+  </div>
+
+  <footer>TCP server on port 9090. Chunk 4096 bytes. Handshake "DATA OK". Header: 3×magic + size + sha256.</footer>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
