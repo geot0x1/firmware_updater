@@ -1,8 +1,10 @@
 <!doctype html>
 <html lang="en">
+    
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/static/style.css">
   <title>Firmware Manager</title>
   <style>
     body { font-family: system-ui, Arial, sans-serif; margin: 0; background: #0b0c0f; color: #e5e7eb; }
@@ -36,25 +38,26 @@
     </div>
   </header>
 
-  <div class="container">
     <h2 style="font-size:16px;margin:0 0 12px 0;color:#9ca3af;">Active Downloads</h2>
+    <div class="table-container">
     <table>
-      <thead>
+        <thead>
         <tr>
-          <th>FirmwareID</th>
-          <th>Status</th>
-          <th>Progress</th>
-          <th>%</th>
-          <th>IP</th>
-          <th>Bytes</th>
-          <th>Started</th>
-          <th>ConnID</th>
+            <th>FirmwareID</th>
+            <th>Status</th>
+            <th>Progress</th>
+            <th>%</th>
+            <th>IP</th>
+            <th>Bytes</th>
+            <th>Started</th>
+            <th>ConnID</th>
         </tr>
-      </thead>
-      <tbody id="downloadsBody">
+        </thead>
+        <tbody id="downloadsBody">
         <!-- rows injected here -->
-      </tbody>
+        </tbody>
     </table>
+    </div>
 
     <div style="margin-top:16px;">
       <h3 style="font-size:14px;margin:0 0 8px 0;color:#9ca3af;">Stored Firmwares</h3>
