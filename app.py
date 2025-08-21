@@ -143,24 +143,25 @@ def handle_client(conn, addr):
     print(connection_id)
     start_ts = time.time()
 
-    update_download(connection_id,
-                    connection_id=connection_id,
-                    firmwareId="",
-                    ip=ip,
-                    status="Connecting",
-                    progress=0,
-                    bytes_sent=0,
-                    total_bytes=0,
-                    start_time=now_iso())
+    update_download(
+    connection_id,
+    firmwareId="",
+    ip=ip,
+    status="Connected",
+    progress=0,
+    last_update=now_iso()
+)
 
     try:
         # 1) Expect request like: b'ID=fw_v1.0.0\n' or b'ID=...'
         # Read up to newline or 128 bytes.
         req = recv_until(conn, b"\n", maxlen=128)
+        print("1 req:", req)
         if not req:
             update_download(connection_id, status="Failed: Invalid Request")
             return
         req = req.strip().decode(errors="ignore")
+        print("2 req:", req)
         if not req.startswith("ID="):
             update_download(connection_id, status="Failed: Invalid Request")
             return
@@ -183,6 +184,7 @@ def handle_client(conn, addr):
         header = struct.pack("!LLLL", MAGIC1, MAGIC2, MAGIC3, total_bytes) + sha  # 4*4 + 32 = 48 bytes
         assert len(header) == 48
 
+        print("Sending header")
         # 4) Send header
         status = "Downloading Header"
         update_download(connection_id, status=status)
@@ -196,13 +198,18 @@ def handle_client(conn, addr):
         else:
             consec_timeouts = 0
 
+        print("Waiting for DATA OK")
         # 5) Wait for "DATA OK"
         update_download(connection_id, status="Waiting for DATA OK")
-        a = recv_fixed(conn, len(b"DATA OK"))
-        if a is None or a != b"DATA OK":
+        a = recv_until(conn, b"\n", maxlen=128)
+        a = a.strip().decode(errors="ignore")
+        print("Received ACK:", a)
+        if a is None or a != "DATA OK":
+            print("Failed to receive ACK for header")
             update_download(connection_id, status="Failed: No ACK After Header")
             return
 
+        print("Header sent successfully")
         # 6) Send chunks with handshake
         sent_bytes = 0
         nchunks = (total_bytes + CHUNK_SIZE - 1) // CHUNK_SIZE
@@ -225,10 +232,14 @@ def handle_client(conn, addr):
                 else:
                     consec_timeouts = 0
 
+                print("Current downloads:", current_downloads)
+
                 # Wait for ACK
                 update_download(connection_id, status="Waiting for DATA OK")
-                a = recv_fixed(conn, len(b"DATA OK"))
-                if a is None or a != b"DATA OK":
+                a = recv_until(conn, b"\n", maxlen=128)
+                a = a.strip().decode(errors="ignore")
+                print(f"ACK for chunk {i+1}: {a}")
+                if a is None or a != "DATA OK":
                     update_download(connection_id, status="Failed: No ACK")
                     return
 
@@ -250,7 +261,7 @@ def handle_client(conn, addr):
         except Exception:
             pass
         # keep completed/failed entries visible for a short time
-        time.sleep(2)
+        time.sleep(5)
         remove_download(connection_id)
 
 def tcp_server():
@@ -331,4 +342,4 @@ if __name__ == "__main__":
     t.start()
     print(f"[TCP] Listening on {TCP_HOST}:{TCP_PORT}")
     # Start Flask
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True, use_reloader=False)
