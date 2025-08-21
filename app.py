@@ -232,8 +232,6 @@ def handle_client(conn, addr):
                 else:
                     consec_timeouts = 0
 
-                print("Current downloads:", current_downloads)
-
                 # Wait for ACK
                 update_download(connection_id, status="Waiting for DATA OK")
                 a = recv_until(conn, b"\n", maxlen=128)
@@ -260,9 +258,6 @@ def handle_client(conn, addr):
             conn.close()
         except Exception:
             pass
-        # keep completed/failed entries visible for a short time
-        time.sleep(5)
-        remove_download(connection_id)
 
 def tcp_server():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -277,10 +272,39 @@ def tcp_server():
         t = threading.Thread(target=handle_client, args=(conn, addr), daemon=True)
         t.start()
 
+
+def find_completed_entries(data):
+    """
+    Returns a dictionary of all entries with status 'Completed'.
+    
+    :param data: dict containing firmware info
+    :return: dict of completed entries
+    """
+    return {key: value for key, value in data.items() if value.get('status') == 'Completed'}
+
+
+def get_completed_keys(data):
+    """
+    Returns a list of keys for entries with status 'Completed'.
+    
+    :param data: dict containing firmware info
+    :return: list of keys
+    """
+    return [key for key, value in data.items() if value.get('status') == 'Completed']
+
+
 # ========================== FLASK ROUTES ==========================
 @app.route("/")
 def index():
     return render_template("index.html")
+
+@app.route("/api/downloads_status/clear", methods=["POST"])
+def api_downloads_status_clear():
+    with downloads_lock:
+        completed_keys = get_completed_keys(current_downloads)
+        for key in completed_keys:
+            del current_downloads[key]
+    return jsonify({"ok": True})
 
 @app.route("/api/downloads_status")
 def api_downloads_status():

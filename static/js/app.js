@@ -46,6 +46,13 @@ downloadBtn.addEventListener('click', async () => {
   window.location.href = '/download/' + encodeURIComponent(id);
 });
 
+clearBtn.addEventListener('click', async () => {
+  if (confirm('Clear all completed/failed downloads?')) {
+    await fetch('/api/downloads_status/clear', { method: 'POST' });
+    refreshDownloads();
+  }
+});
+
 async function refreshDownloads() {
   try {
     const rows = await fetch('/api/downloads_status').then(r => r.json());
